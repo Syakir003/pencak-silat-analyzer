@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-silat-gold: #d4af37;
+  --color-silat-gold-glow: rgba(212, 175, 55, 0.5);
+}
+
+@layer base {
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #fdfbf7;
+    --text-primary: #1a1a1a;
+    --text-secondary: #4a4a4a;
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --border-color: rgba(212, 175, 55, 0.2);
+    --accent-color: #d4af37;
+  }
+
+  .dark {
+    --bg-primary: #0f0f0f;
+    --bg-secondary: #1a1a1a;
+    --text-primary: #f5f5f5;
+    --text-secondary: #a0a0a0;
+    --card-bg: rgba(25, 25, 25, 0.8);
+    --border-color: rgba(212, 175, 55, 0.3);
+    --accent-color: #f1c40f;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+.glass-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+}
+
+.neon-glow-gold {
+  box-shadow: 0 0 15px var(--accent-color);
+}
+
+.neon-text-gold {
+  text-shadow: 0 0 10px var(--accent-color);
+}
+
+.prose-custom {
+  --tw-prose-body: var(--text-secondary);
+  --tw-prose-headings: var(--text-primary);
+  --tw-prose-links: var(--accent-color);
+  --tw-prose-bold: var(--text-primary);
+  --tw-prose-bullets: var(--accent-color);
+}
+
+/* 3D Animation Placeholder Style */
+.anim-3d-container {
+  perspective: 1000px;
+}
+
+.anim-3d-card {
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.anim-3d-card:hover {
+  transform: rotateY(10deg) rotateX(5deg);
+}
