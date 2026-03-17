@@ -94,7 +94,6 @@ export async function analyzeAthlete(
 
   return JSON.parse(text || "{}");
 }
-
 export async function analyzeVideo(
   videoBase64: string,
   mimeType: string,
@@ -136,3 +135,4 @@ export async function analyzeVideo(
 
   return JSON.parse(response.text || "{}");
 }
+
