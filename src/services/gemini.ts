@@ -1,103 +1,106 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenerativeAI, SchemaType, Schema } from "@google/generative-ai";
 import { AthleteData, AnalysisResult, VideoAnalysisResult } from "../types";
 
-const ai = new GoogleGenAI({
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY,
-});
+/**
+ * Inisialisasi Google AI dengan API Key baru Anda.
+ * Pastikan VITE_GEMINI_API_KEY sudah di-update di .env dan dashboard Netlify.
+ */
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
+/**
+ * 1. Fungsi Analisis Atlet (Teks)
+ */
 export async function analyzeAthlete(
   data: AthleteData,
-  lang: "id" | "en",
+  lang: "id" | "en"
 ): Promise<AnalysisResult> {
-  const model = "gemini-2.5-flash";
-  const prompt = `Analyze this Pencak Silat athlete:
-    Name: ${data.name}
-    Age: ${data.age}
-    Weight: ${data.weight}kg
-    Height: ${data.height}cm
-
-    Language: ${lang === "id" ? "Indonesian" : "English"}
-
-    Determine if they are better suited for 'Fighter' (Tanding) or 'Seni' (Art) category.
-    Provide:
-    1. Category (Fighter or Seni)
-    2. Reasoning
-    3. Personalized Training Program (Include specific counts for exercises like Push-ups, Sit-ups, Squats, and Running distance/duration)
-    4. Power Training Schedule (specific exercises for power with exact sets and reps)
-    5. Nutrition Plan
-
-    Respond in JSON format.`;
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          category: { type: Type.STRING, enum: ["Fighter", "Seni"] },
-          reasoning: { type: Type.STRING },
-          trainingProgram: { type: Type.STRING },
-          powerSchedule: { type: Type.STRING },
-          nutritionPlan: { type: Type.STRING },
-        },
-        required: [
-          "category",
-          "reasoning",
-          "trainingProgram",
-          "powerSchedule",
-          "nutritionPlan",
-        ],
+  // Definisi Schema yang presisi untuk menghindari error "not assignable to type Schema"
+  const athleteSchema: Schema = {
+    type: SchemaType.OBJECT,
+    properties: {
+      category: { 
+        type: SchemaType.STRING, 
+        enum: ["Fighter", "Seni"],
+        description: "Category recommendation for the athlete"
       },
+      reasoning: { type: SchemaType.STRING },
+      trainingProgram: { type: SchemaType.STRING },
+      powerSchedule: { type: SchemaType.STRING },
+      nutritionPlan: { type: SchemaType.STRING },
+    },
+    required: ["category", "reasoning", "trainingProgram", "powerSchedule", "nutritionPlan"],
+  };
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash", // VERSI STABIL
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: athleteSchema,
     },
   });
 
-  const text = response.candidates?.[0]?.content?.parts?.[0]?.text;
+  const prompt = `Analyze this Pencak Silat athlete for professional recommendation:
+    Name: ${data.name}, Age: ${data.age}, Weight: ${data.weight}kg, Height: ${data.height}cm.
+    Language: ${lang === "id" ? "Indonesian" : "English"}.
+    
+    Determine if they suit 'Fighter' (Tanding) or 'Seni' (Art). 
+    Provide specific counts for exercises and a detailed nutrition plan.`;
 
-  console.log("AI TEXT:", text);
-
-  return JSON.parse(text || "{}");
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return JSON.parse(response.text());
+  } catch (error) {
+    console.error("Gagal menganalisis atlet:", error);
+    // Kembalikan objek kosong atau error handling sesuai kebutuhan UI Anda
+    throw error;
+  }
 }
 
+/**
+ * 2. Fungsi Analisis Video (Multimodal)
+ */
 export async function analyzeVideo(
   videoBase64: string,
   mimeType: string,
-  lang: "id" | "en",
+  lang: "id" | "en"
 ): Promise<VideoAnalysisResult> {
-  const model = "gemini-1.5-flash";
-  const prompt = `Analyze this Pencak Silat performance video.
-    Language: ${lang === "id" ? "Indonesian" : "English"}
-    Identify:
-    1. Number of punches (pukulan)
-    2. Number of kicks (tendangan)
-    3. Techniques used (e.g., Sabit, Gejlig, Tangkisan, etc.)
-    4. A detailed explanation of the performance.
-
-    Respond in JSON format.`;
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: {
-      parts: [
-        { inlineData: { data: videoBase64, mimeType } },
-        { text: prompt },
-      ],
-    },
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          punches: { type: Type.INTEGER },
-          kicks: { type: Type.INTEGER },
-          techniques: { type: Type.ARRAY, items: { type: Type.STRING } },
-          explanation: { type: Type.STRING },
-        },
-        required: ["punches", "kicks", "techniques", "explanation"],
+  const videoSchema: Schema = {
+    type: SchemaType.OBJECT,
+    properties: {
+      punches: { type: SchemaType.NUMBER },
+      kicks: { type: SchemaType.NUMBER },
+      techniques: { 
+        type: SchemaType.ARRAY, 
+        items: { type: SchemaType.STRING } 
       },
+      explanation: { type: SchemaType.STRING },
+    },
+    required: ["punches", "kicks", "techniques", "explanation"],
+  };
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: videoSchema,
     },
   });
 
-  return JSON.parse(response.text || "{}");
+  const prompt = `Analyze this Pencak Silat performance video.
+    Language: ${lang === "id" ? "Indonesian" : "English"}.
+    Identify total punches, total kicks, specific techniques used, 
+    and provide a professional critique.`;
+
+  try {
+    const result = await model.generateContent([
+      { inlineData: { data: videoBase64, mimeType } },
+      { text: prompt },
+    ]);
+    const response = await result.response;
+    return JSON.parse(response.text());
+  } catch (error) {
+    console.error("Gagal menganalisis video:", error);
+    throw error;
+  }
 }
