@@ -1,7 +1,7 @@
 import { AthleteData, AnalysisResult, VideoAnalysisResult } from "../types";
 
 // TEMPELKAN URL GAS KAMU DI SINI
-const GAS_URL = "https://script.google.com/macros/s/AKfycbykItI_iYaHgg1YSA8A6NLa61wpNWClrKdc9MZMiFvNaQaMFjIuoWmm-_HXGMh3gqrm/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbywjHsjkqKMlNIWAyH0MjjK9UMYpHwMIEgAp2lKB1szcXEEuk8PT1yA4ul2VATaHA/exec";
 
 export async function analyzeAthlete(data: AthleteData, lang: "id" | "en"): Promise<AnalysisResult> {
   try {
