@@ -1,6 +1,6 @@
 import { AthleteData, AnalysisResult, VideoAnalysisResult } from "../types";
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzP3wPuMJx0n8a8WQKA6bLIibpvOlTFqeuZl3YFu50bp10JVehbMMoK6Er1ylhE9bb-/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwuZkU6mCxWOEAPOSrCfwjWZqtwHHnHyq1rVy_Z9iXkwZH3lKBASijPYaDcGiCxz8tz/exec";
 
 export async function analyzeAthlete(data: AthleteData, lang: string): Promise<AnalysisResult> {
   const response = await fetch(GAS_URL, {
