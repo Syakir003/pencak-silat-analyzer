@@ -4,7 +4,7 @@ import { AthleteData, AnalysisResult, VideoAnalysisResult } from "../types";
 const ai = new GoogleGenAI({
   apiKey: import.meta.env.VITE_GEMINI_API_KEY,
 });
-console.log(import.meta.env.VITE_GEMINI_API_KEY);
+
 export async function analyzeAthlete(
   data: AthleteData,
   lang: "id" | "en",
